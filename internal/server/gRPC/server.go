@@ -8,14 +8,10 @@ import (
 type GRPCServer struct {
 }
 
-// Test implements server.Server.
-func (GRPCServer) Test() any {
-	panic("unimplemented")
-}
-
 // Start implements server.Server.
-func (GRPCServer) Start() {
+func (GRPCServer) Start() error {
 	fmt.Println("GRPC server is running...")
+	return nil
 }
 
 func New() server.Server {

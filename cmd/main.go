@@ -6,6 +6,7 @@ import (
 	"clean-arch-hex/internal/server/rest"
 	"context"
 	"fmt"
+	"log"
 )
 
 func main() {
@@ -33,7 +34,5 @@ func main() {
 		panic(err)
 	}
 	serv := rest.New(_db, cache.Cache{})
-	serv.Start()
-
-	fmt.Println(serv.Test())
+	log.Fatal(serv.Start())
 }
