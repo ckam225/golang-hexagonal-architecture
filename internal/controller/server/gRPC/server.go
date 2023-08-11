@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"clean-arch-hex/internal/server"
+	"clean-arch-hex/internal/controller/server"
 	"fmt"
 )
 

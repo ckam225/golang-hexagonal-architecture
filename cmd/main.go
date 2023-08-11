@@ -2,8 +2,8 @@ package main
 
 import (
 	"clean-arch-hex/internal/cache"
+	"clean-arch-hex/internal/controller/server/rest"
 	"clean-arch-hex/internal/db/postgres"
-	"clean-arch-hex/internal/server/rest"
 	"context"
 	"fmt"
 	"log"

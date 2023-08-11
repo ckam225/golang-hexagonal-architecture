@@ -9,8 +9,8 @@ import (
 )
 
 func (h HTTPServer) GetAllPost(c *fiber.Ctx) error {
-	ucase := usecase.ReadPost(h.db)
-	posts, err := ucase.GetAll(context.Background(), entity.PostFilter{})
+	service := usecase.ReadPost(h.db)
+	posts, err := service.GetAll(context.Background(), entity.PostFilter{})
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err})
 	}
@@ -22,8 +22,8 @@ func (h HTTPServer) GetPost(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": err})
 	}
-	ucase := usecase.ReadPost(h.db)
-	posts, err := ucase.Find(context.Background(), entity.PostFilter{
+	service := usecase.ReadPost(h.db)
+	posts, err := service.Find(context.Background(), entity.PostFilter{
 		ID: id,
 	})
 	if err != nil {
