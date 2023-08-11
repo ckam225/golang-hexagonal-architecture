@@ -27,13 +27,11 @@ func (redisDB) GetPosts(ctx context.Context, f entity.PostFilter) ([]entity.Post
 			ID:      1,
 			Title:   "Java for null",
 			Content: "Course for JAVA",
-			UserId:  0,
 		},
 		{
 			ID:      2,
 			Title:   "Net/HTTP",
 			Content: "Golang HTTP module",
-			UserId:  0,
 		},
 	}, nil
 }

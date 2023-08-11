@@ -2,21 +2,35 @@ package postgres
 
 import (
 	"clean-arch-hex/internal/db"
-	"database/sql"
+	"clean-arch-hex/pkg/utils"
+	"context"
+	"errors"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
 	// _ "github.com/lib/pq"
 )
 
 type PG struct {
-	db *sql.DB
+	db *pgxpool.Pool
 }
 
-func New(dsn string) (db.Database, error) {
-	// openDB, err := sql.Open("postgres", dsn)
-	// if err != nil {
-	// 	return PG{}, err
-	// }
+func New(ctx context.Context, dsn string, maxAttempts int) (db.Database, error) {
+	var pool *pgxpool.Pool
+	var err error
+	if err = utils.TryAttempt(func() error {
+		ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+		defer cancel()
+		pool, err = pgxpool.New(ctx, dsn)
+		if err != nil {
+			return err
+		}
+		return nil
+	}, maxAttempts, 5*time.Second); err != nil {
+		return nil, errors.New("error do with tries postgresql")
+	}
 	return PG{
-		// db: openDB,
+		db: pool,
 	}, nil
 }
 
