@@ -8,17 +8,19 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/redis/go-redis/v9"
 )
 
 func (h HTTPServer) GetAllPost(c *fiber.Ctx) error {
-	data, found := h.cache.Get(c.Path())
-	if !found {
+	ctx := context.Background()
+	data, err := h.cache.Get(ctx, c.Path())
+	if err != nil || err == redis.Nil {
 		service := usecase.ReadPost(h.db)
 		posts, err := service.GetAll(context.Background(), entity.PostFilter{})
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": err})
 		}
-		h.cache.Set(c.Path(), posts, time.Minute*2)
+		h.cache.Set(ctx, c.Path(), posts, time.Minute*2)
 		return c.JSON(posts)
 	}
 	return c.JSON(data)
@@ -29,8 +31,9 @@ func (h HTTPServer) GetPost(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": err})
 	}
-	data, found := h.cache.Get(c.Path())
-	if !found {
+	ctx := context.Background()
+	data, err := h.cache.Get(ctx, c.Path())
+	if err != nil || err == redis.Nil {
 		service := usecase.ReadPost(h.db)
 		post, err := service.Find(context.Background(), entity.PostFilter{
 			ID: id,
@@ -41,7 +44,7 @@ func (h HTTPServer) GetPost(c *fiber.Ctx) error {
 		if post.ID == 0 {
 			return c.Status(404).JSON(fiber.Map{"error": fmt.Sprintf("Not found: %d", id)})
 		}
-		h.cache.Set(c.Path(), post, time.Minute*2)
+		h.cache.Set(ctx, c.Path(), post, time.Minute*2)
 		return c.JSON(post)
 	}
 	post, ok := data.(entity.Post)
