@@ -8,6 +8,7 @@ import (
 	"clean-arch-hex/internal/server"
 	"context"
 	"fmt"
+	"time"
 )
 
 type HTTPServer struct {
@@ -17,12 +18,17 @@ type HTTPServer struct {
 
 // Test implements server.Server.
 func (h HTTPServer) Test() any {
-	ucase := usecase.NewPostUseCase(h.db)
-	posts, err := ucase.GetAll(context.Background(), entity.PostFilter{})
-	if err != nil {
-		panic(err)
+	data, found := h.cache.Get("list-posts")
+	if !found {
+		ucase := usecase.NewPostUseCase(h.db)
+		posts, err := ucase.GetAll(context.Background(), entity.PostFilter{})
+		if err != nil {
+			panic(err)
+		}
+		h.cache.Set("list-posts", posts, time.Minute*2)
+		return posts
 	}
-	return posts
+	return data
 }
 
 // Start implements server.Server.
