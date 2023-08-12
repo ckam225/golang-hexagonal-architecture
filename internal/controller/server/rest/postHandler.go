@@ -5,6 +5,7 @@ import (
 	"clean-arch-hex/internal/domain/usecase"
 	"context"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -55,4 +56,24 @@ func (h HTTPServer) GetPost(c *fiber.Ctx) error {
 		return c.Status(404).JSON(fiber.Map{"error": fmt.Sprintf("Not found: %d", id)})
 	}
 	return c.JSON(post)
+}
+
+func (h HTTPServer) CreatePost(c *fiber.Ctx) error {
+	var q entity.Post
+	if err := c.BodyParser(&q); err != nil {
+		return c.Status(422).JSON(err)
+	}
+	if q.Content == "" || q.Title == "" {
+		log.Println("content or title is empty")
+		return c.Status(422).JSON(fiber.ErrUnprocessableEntity)
+	}
+	ctx := context.Background()
+	service := usecase.SavePost(h.db)
+	if err := service.Create(ctx, &q); err != nil {
+		return c.Status(500).JSON(fiber.Map{
+			"message": err.Error(),
+			"code":    500,
+		})
+	}
+	return c.JSON(q)
 }

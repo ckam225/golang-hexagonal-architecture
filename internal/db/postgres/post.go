@@ -30,8 +30,16 @@ func buildFilterQuery(query string, f entity.PostFilter) *sqlb.QueryBuilder {
 }
 
 // CreatePost implements db.Database.
-func (PG) CreatePost(ctx context.Context, post *entity.Post) error {
-	panic("unimplemented")
+func (p PG) CreatePost(ctx context.Context, post *entity.Post) error {
+	q := sqlb.Insert("posts").
+		Value("title", post.Title).
+		Value("content", post.Content).
+		Return("id").
+		Build()
+	if err := p.db.QueryRow(ctx, q.Stmt(), q.Values()...).Scan(&post.ID); err != nil {
+		return err
+	}
+	return nil
 }
 
 // DeletePost implements db.Database.
