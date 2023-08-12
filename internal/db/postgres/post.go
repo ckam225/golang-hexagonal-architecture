@@ -41,6 +41,9 @@ func buildFilterQuery(query string, f entity.PostFilter) (string, []interface{})
 	if clause != "" {
 		query += " where " + clause
 	}
+	if f.Limit > 0 {
+		query += fmt.Sprintf(" limit %d", f.Limit)
+	}
 	return query, args
 }
 
@@ -57,9 +60,10 @@ func (PG) DeletePost(ctx context.Context, id int64, soft bool) error {
 // FindPost implements db.Database.
 func (pg PG) FindPost(ctx context.Context, f entity.PostFilter) (entity.Post, error) {
 	var post entity.Post
-	q, args := buildFilterQuery("select * from posts limit 1", f)
+	q, args := buildFilterQuery("select * from posts", f)
 	if err := pg.db.QueryRow(ctx, q, args...).
 		Scan(&post.ID, &post.Title, &post.Content, &post.UserId); err != nil {
+		log.Println(q, args)
 		return entity.Post{}, err
 	}
 	return post, nil

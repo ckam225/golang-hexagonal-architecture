@@ -8,6 +8,7 @@ type Post struct {
 }
 
 type PostFilter struct {
+	Limit   int
 	ID      int
 	Title   string
 	Content string

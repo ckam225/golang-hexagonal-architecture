@@ -1,7 +1,7 @@
 package main
 
 import (
-	"clean-arch-hex/internal/cache"
+	"clean-arch-hex/internal/cache/memcache"
 	"clean-arch-hex/internal/controller/server/rest"
 	"clean-arch-hex/internal/db/postgres"
 	"context"
@@ -33,6 +33,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	serv := rest.New(_db, cache.Cache{})
+	serv := rest.New(_db, memcache.New())
 	log.Fatal(serv.Start())
 }
