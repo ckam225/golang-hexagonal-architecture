@@ -3,48 +3,30 @@ package postgres
 import (
 	"clean-arch-hex/internal/domain/entity"
 	"context"
-	"fmt"
 	"log"
+
+	"github.com/LineoIT/sqlb"
 )
 
-func buildFilterQuery(query string, f entity.PostFilter) (string, []interface{}) {
+func buildFilterQuery(query string, f entity.PostFilter) *sqlb.QueryBuilder {
 	if query == "" {
 		query = "select * from posts"
 	}
-	var clause string
-	args := make([]interface{}, 0)
+	q := sqlb.SQL(query).Limit(int64(f.Limit))
+
 	if f.Content != "" {
-		clause += "content ilike '%$1%'"
-		args = append(args, f.Content)
+		q.Where(sqlb.Ilike("content", "'%"+f.Content+"%'"))
 	}
 	if f.Title != "" {
-		if clause != "" {
-			clause += " and "
-		}
-		clause += fmt.Sprintf("title=$%d", len(args)+1)
-		args = append(args, f.Title)
+		q.Where(sqlb.Ilike("title", "'%"+f.Title+"%'"))
 	}
 	if f.UserId > 0 {
-		if clause != "" {
-			clause += " and "
-		}
-		clause += fmt.Sprintf("user_id=$%d", len(args)+1)
-		args = append(args, f.UserId)
+		q.Where("user_id", f.UserId)
 	}
 	if f.ID > 0 {
-		if clause != "" {
-			clause += " and "
-		}
-		clause += fmt.Sprintf("id=$%d", len(args)+1)
-		args = append(args, f.ID)
+		q.Where("id", f.ID)
 	}
-	if clause != "" {
-		query += " where " + clause
-	}
-	if f.Limit > 0 {
-		query += fmt.Sprintf(" limit %d", f.Limit)
-	}
-	return query, args
+	return q
 }
 
 // CreatePost implements db.Database.
@@ -60,10 +42,11 @@ func (PG) DeletePost(ctx context.Context, id int64, soft bool) error {
 // FindPost implements db.Database.
 func (pg PG) FindPost(ctx context.Context, f entity.PostFilter) (entity.Post, error) {
 	var post entity.Post
-	q, args := buildFilterQuery("select * from posts", f)
-	if err := pg.db.QueryRow(ctx, q, args...).
+	f.Limit = 1
+	q := buildFilterQuery("", f)
+	if err := pg.db.QueryRow(ctx, q.Stmt(), q.Args()...).
 		Scan(&post.ID, &post.Title, &post.Content, &post.UserId); err != nil {
-		log.Println(q, args)
+		log.Println(q.Debug())
 		return entity.Post{}, err
 	}
 	return post, nil
@@ -71,17 +54,19 @@ func (pg PG) FindPost(ctx context.Context, f entity.PostFilter) (entity.Post, er
 
 // GetPosts implements db.Database.
 func (pg PG) GetPosts(ctx context.Context, f entity.PostFilter) ([]entity.Post, error) {
-	posts := make([]entity.Post, 0)
-	q, args := buildFilterQuery("select * from posts", f)
-	rows, err := pg.db.Query(ctx, q, args...)
+	q := buildFilterQuery("", f)
+	rows, err := pg.db.Query(ctx, q.Stmt(), q.Args()...)
 	if err != nil {
-		log.Println(q, args)
+		log.Println(q.Debug())
 		return nil, err
 	}
+	defer rows.Close()
+
+	posts := make([]entity.Post, 0)
 	for rows.Next() {
 		var post entity.Post
 		if err := rows.Scan(&post.ID, &post.Title, &post.Content, &post.UserId); err != nil {
-			log.Println(q, args)
+			log.Println(q.Debug())
 			return nil, err
 		}
 		posts = append(posts, post)
