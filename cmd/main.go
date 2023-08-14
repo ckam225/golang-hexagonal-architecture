@@ -3,10 +3,13 @@ package main
 import (
 	"clean-arch-hex/internal/cache/memcache"
 	"clean-arch-hex/internal/controller/server/grpc"
+	"clean-arch-hex/internal/controller/server/grpc/gateway"
 	"clean-arch-hex/internal/db/postgres"
 	"context"
 	"fmt"
 	"log"
+
+	gRPC "google.golang.org/grpc"
 )
 
 func main() {
@@ -35,5 +38,16 @@ func main() {
 		panic(err)
 	}
 	serv := grpc.NewServer(_db, memcache.New())
-	log.Fatal(serv.Start())
+	go startGrpcHttpGatewayServer(":8080")
+	log.Fatal(serv.Start(":8080"))
+}
+
+func startGrpcHttpGatewayServer(rpcAddress string) {
+	conn, err := gRPC.Dial(rpcAddress, gRPC.WithInsecure())
+	if err != nil {
+		log.Fatalf("Could not connect: %v", err)
+	}
+	defer conn.Close()
+	gate := gateway.NewGrpcHttpGateway(conn)
+	log.Fatal(gate.Start(":8081"))
 }

@@ -33,19 +33,19 @@ func (s *Server) Test(req *http.Request, msTimeout ...int) (*http.Response, erro
 }
 
 // Start implements server.Server.
-func (s *Server) Start() error {
+func (s *Server) Start(address string) error {
 
 	// TODO: write intercepter
 	rpcServer := gRPC.NewServer()
 	reflection.Register(rpcServer)
 	proto.RegisterPostServiceServer(rpcServer, s)
 
-	listener, err := net.Listen("tcp", ":4000")
+	listener, err := net.Listen("tcp", address)
 	if err != nil {
 		return fmt.Errorf("Failed to listen: %w", err)
 	}
 	defer listener.Close()
-	log.Println("GRPC server is running on port 4000.")
+	log.Printf("GRPC server is running on port %s.\n", address)
 
 	if err := rpcServer.Serve(listener); err != nil {
 		return fmt.Errorf("cannot start gRPC server: %w", err)

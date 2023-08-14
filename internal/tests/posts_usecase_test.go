@@ -2,7 +2,7 @@ package tests
 
 import (
 	"clean-arch-hex/internal/cache/memcache"
-	"clean-arch-hex/internal/controller/server/rest"
+	"clean-arch-hex/internal/controller/server/restful"
 	mockdb "clean-arch-hex/internal/db/mocks"
 	"clean-arch-hex/internal/domain/entity"
 	"context"
@@ -83,7 +83,7 @@ func TestHandler_createPosts(t *testing.T) {
 			db.EXPECT().CreatePost(context.TODO(), test.inputObj).Return(nil)
 			// db.EXPECT().CreatePost(gomock.Any(), gomock.Eq(test.inputObj)).Times(1).Return(nil)
 
-			serv := rest.New(db, memcache.New())
+			serv := restful.New(db, memcache.New())
 			// Create Request
 			// req := httptest.NewRequest(http.MethodPost, "/posts", bytes.NewBufferString(test.inputBody))
 			req := httptest.NewRequest(http.MethodPost, "/posts", strings.NewReader(test.inputBody))

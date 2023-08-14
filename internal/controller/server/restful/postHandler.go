@@ -1,4 +1,4 @@
-package rest
+package restful
 
 import (
 	"clean-arch-hex/internal/domain/entity"

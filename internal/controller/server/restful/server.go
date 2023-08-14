@@ -1,4 +1,4 @@
-package rest
+package restful
 
 import (
 	"clean-arch-hex/internal/cache"
@@ -25,9 +25,9 @@ func (h *server) Test(req *http.Request, msTimeout ...int) (*http.Response, erro
 }
 
 // Start implements server.Server.
-func (h *server) Start() error {
+func (h *server) Start(address string) error {
 	fmt.Println("HTTP server is running...")
-	return h.app.Listen("0.0.0.0:3000")
+	return h.app.Listen(address)
 }
 
 func (h server) Health(c *fiber.Ctx) error {
