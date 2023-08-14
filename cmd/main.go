@@ -2,7 +2,7 @@ package main
 
 import (
 	"clean-arch-hex/internal/cache/memcache"
-	"clean-arch-hex/internal/controller/server/rest"
+	"clean-arch-hex/internal/controller/server/grpc"
 	"clean-arch-hex/internal/db/postgres"
 	"context"
 	"fmt"
@@ -29,10 +29,11 @@ func main() {
 		dbName,
 		dbSSLMode,
 	)
+
 	_db, err := postgres.New(ctx, dsn, 3)
 	if err != nil {
 		panic(err)
 	}
-	serv := rest.New(_db, memcache.New())
+	serv := grpc.NewServer(_db, memcache.New())
 	log.Fatal(serv.Start())
 }

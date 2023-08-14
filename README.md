@@ -3,3 +3,6 @@
 
 - Postgresql
 - Redis
+
+
+evans --tls --host example.com -r repl

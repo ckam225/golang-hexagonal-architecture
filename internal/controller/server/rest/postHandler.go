@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func (h HTTPServer) GetAllPost(c *fiber.Ctx) error {
+func (h server) GetAllPosts(c *fiber.Ctx) error {
 	ctx := context.Background()
 	data, err := h.cache.Get(ctx, c.Path())
 	if err != nil || err == redis.Nil {
@@ -27,7 +27,7 @@ func (h HTTPServer) GetAllPost(c *fiber.Ctx) error {
 	return c.JSON(data)
 }
 
-func (h HTTPServer) GetPost(c *fiber.Ctx) error {
+func (h server) GetPost(c *fiber.Ctx) error {
 	id, err := c.ParamsInt("id")
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": err})
@@ -58,7 +58,7 @@ func (h HTTPServer) GetPost(c *fiber.Ctx) error {
 	return c.JSON(post)
 }
 
-func (h HTTPServer) CreatePost(c *fiber.Ctx) error {
+func (h server) CreatePost(c *fiber.Ctx) error {
 	var q entity.Post
 	if err := c.BodyParser(&q); err != nil {
 		return c.Status(422).JSON(err)
